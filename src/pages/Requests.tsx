@@ -1,5 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { RequestForm } from '@/components/requests/RequestForm';
+import { RequestList } from '@/components/requests/RequestList';
 
 export default function Requests() {
   return (
@@ -22,21 +24,13 @@ export default function Requests() {
               <CardDescription>Preencha os dados para solicitar um serviço</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Formulário de solicitação em desenvolvimento...</p>
+              <RequestForm />
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="list">
-          <Card>
-            <CardHeader>
-              <CardTitle>Minhas Solicitações</CardTitle>
-              <CardDescription>Acompanhe o status das suas solicitações</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Lista de solicitações em desenvolvimento...</p>
-            </CardContent>
-          </Card>
+          <RequestList />
         </TabsContent>
       </Tabs>
     </div>

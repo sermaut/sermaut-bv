@@ -1,61 +1,51 @@
-import { Home, FileText, Users, BarChart3, Phone, ChevronLeft, ChevronRight } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
+import { Home, FileText, Users, BarChart3, Mail } from 'lucide-react';
+import { useSidebar } from '@/contexts/SidebarContext';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { useState } from 'react';
 
 const menuItems = [
   { title: 'Página Inicial', url: '/', icon: Home },
   { title: 'Solicitações', url: '/requests', icon: FileText },
-  { title: 'Contratados Parciais', url: '/contractors', icon: Users },
+  { title: 'Contratados', url: '/contractors', icon: Users },
   { title: 'Relatórios', url: '/reports', icon: BarChart3 },
-  { title: 'Contacte-nos', url: '/contact', icon: Phone },
+  { title: 'Contato', url: '/contact', icon: Mail },
 ];
 
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const { isOpen, close } = useSidebar();
 
   return (
     <aside
       className={cn(
-        'bg-sidebar-background border-r border-sidebar-border h-screen sticky top-0 transition-all duration-300 flex flex-col',
-        collapsed ? 'w-16' : 'w-64'
+        'bg-card border-r border-border transition-transform duration-300 flex flex-col z-50',
+        // Mobile: fixed, slide from left
+        'fixed inset-y-0 left-0 w-64 md:relative md:translate-x-0',
+        isOpen ? 'translate-x-0' : '-translate-x-full'
       )}
     >
-      {/* Logo */}
-      <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
-        {!collapsed && (
-          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Melody Hub
-          </h1>
-        )}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setCollapsed(!collapsed)}
-          className="ml-auto"
-        >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </Button>
+      <div className="p-4 border-b border-border">
+        <h2 className="font-semibold text-lg">Melody Hub</h2>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
+      <nav className="flex-1 p-2 overflow-y-auto">
+        <ul className="space-y-1">
           {menuItems.map((item) => (
             <li key={item.url}>
               <NavLink
                 to={item.url}
+                end={item.url === '/'}
+                onClick={close}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
-                    'hover:bg-sidebar-accent',
-                    isActive && 'bg-primary text-primary-foreground font-medium'
+                    'flex items-center gap-3 px-3 py-2 rounded-md transition-colors',
+                    isActive
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   )
                 }
               >
                 <item.icon className="h-5 w-5 flex-shrink-0" />
-                {!collapsed && <span>{item.title}</span>}
+                <span>{item.title}</span>
               </NavLink>
             </li>
           ))}
