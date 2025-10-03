@@ -1,18 +1,21 @@
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, Users, BarChart3, Mail } from 'lucide-react';
+import { Home, FileText, Users, BarChart3, Mail, Shield } from 'lucide-react';
 import { useSidebar } from '@/contexts/SidebarContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { cn } from '@/lib/utils';
-
-const menuItems = [
-  { title: 'Página Inicial', url: '/', icon: Home },
-  { title: 'Solicitações', url: '/requests', icon: FileText },
-  { title: 'Contratados', url: '/contractors', icon: Users },
-  { title: 'Relatórios', url: '/reports', icon: BarChart3 },
-  { title: 'Contato', url: '/contact', icon: Mail },
-];
 
 export function Sidebar() {
   const { isOpen, close } = useSidebar();
+  const { isAdmin } = useUserRole();
+
+  const menuItems = [
+    { title: 'Página Inicial', url: '/', icon: Home },
+    { title: 'Solicitações', url: '/requests', icon: FileText },
+    { title: 'Contratados', url: '/contractors', icon: Users },
+    { title: 'Relatórios', url: '/reports', icon: BarChart3 },
+    { title: 'Contato', url: '/contact', icon: Mail },
+    ...(isAdmin ? [{ title: 'Administração', url: '/admin', icon: Shield }] : []),
+  ];
 
   return (
     <aside

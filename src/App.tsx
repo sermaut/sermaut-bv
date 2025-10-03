@@ -12,11 +12,15 @@ import Contractors from "./pages/Contractors";
 import Reports from "./pages/Reports";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
+import PendingApproval from "./pages/PendingApproval";
+import Suspended from "./pages/Suspended";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, accountStatus } = useAuth();
 
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
@@ -24,6 +28,32 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  if (accountStatus === 'pending') {
+    return <Navigate to="/pending" replace />;
+  }
+
+  if (accountStatus === 'suspended') {
+    return <Navigate to="/suspended" replace />;
+  }
+
+  if (accountStatus === 'rejected') {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { isAdmin, loading } = useUserRole();
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
@@ -39,6 +69,8 @@ const App = () => (
           <AuthProvider>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/pending" element={<PendingApproval />} />
+              <Route path="/suspended" element={<Suspended />} />
               <Route
                 path="/"
                 element={
@@ -52,6 +84,14 @@ const App = () => (
                 <Route path="contractors" element={<Contractors />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="contact" element={<Contact />} />
+                <Route 
+                  path="admin" 
+                  element={
+                    <AdminRoute>
+                      <Admin />
+                    </AdminRoute>
+                  } 
+                />
               </Route>
             </Routes>
           </AuthProvider>

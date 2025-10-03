@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  accountStatus: string | null;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName?: string, phone?: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -19,6 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [accountStatus, setAccountStatus] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -29,6 +31,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Fetch account status when user changes
+        if (session?.user) {
+          setTimeout(() => {
+            supabase
+              .from('profiles')
+              .select('account_status')
+              .eq('id', session.user.id)
+              .single()
+              .then(({ data }) => {
+                setAccountStatus(data?.account_status || null);
+              });
+          }, 0);
+        } else {
+          setAccountStatus(null);
+        }
       }
     );
 
@@ -37,6 +55,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Fetch account status for existing session
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('account_status')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            setAccountStatus(data?.account_status || null);
+          });
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -96,8 +126,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       toast({
-        title: "Conta criada com sucesso!",
-        description: "Você já pode fazer login",
+        title: "Cadastro realizado!",
+        description: "Nossos sistemas estão avaliando seu pedido. Você receberá uma mensagem através de e-mail ou SMS quando for aprovado.",
+        duration: 8000,
       });
 
       return { error: null };
@@ -118,7 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, accountStatus, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );

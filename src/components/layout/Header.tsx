@@ -1,4 +1,4 @@
-import { Bell, LogOut, Moon, Sun, User, Menu } from 'lucide-react';
+import { Bell, LogOut, Moon, Sun, User, Menu, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,11 +10,14 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from 'next-themes';
 import { useSidebar } from '@/contexts/SidebarContext';
+import { useUserBalance } from '@/hooks/useUserBalance';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function Header() {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
   const { toggle } = useSidebar();
+  const { data: balance, isLoading: balanceLoading } = useUserBalance();
 
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -32,6 +35,16 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* User Balance */}
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-lg">
+            <Wallet className="h-4 w-4 text-primary" />
+            {balanceLoading ? (
+              <Skeleton className="h-5 w-20" />
+            ) : (
+              <span className="font-semibold text-primary">{balance?.toLocaleString('pt-AO')} Kz</span>
+            )}
+          </div>
+
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />

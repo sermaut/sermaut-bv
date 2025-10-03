@@ -123,6 +123,7 @@ export type Database = {
           phone: string
           status: Database["public"]["Enums"]["contractor_status"]
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           address?: string | null
@@ -136,6 +137,7 @@ export type Database = {
           phone: string
           status?: Database["public"]["Enums"]["contractor_status"]
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           address?: string | null
@@ -149,8 +151,17 @@ export type Database = {
           phone?: string
           status?: Database["public"]["Enums"]["contractor_status"]
           updated_at?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contractors_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -234,6 +245,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: Database["public"]["Enums"]["account_status"]
+          balance: number
           created_at: string
           full_name: string | null
           id: string
@@ -241,6 +254,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_status?: Database["public"]["Enums"]["account_status"]
+          balance?: number
           created_at?: string
           full_name?: string | null
           id: string
@@ -248,6 +263,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_status?: Database["public"]["Enums"]["account_status"]
+          balance?: number
           created_at?: string
           full_name?: string | null
           id?: string
@@ -365,11 +382,70 @@ export type Database = {
         }
         Relationships: []
       }
+      user_transactions: {
+        Row: {
+          admin_id: string | null
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          request_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          admin_id?: string | null
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          request_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          admin_id?: string | null
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          request_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_transactions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_transactions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      add_user_balance: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -379,6 +455,7 @@ export type Database = {
       }
     }
     Enums: {
+      account_status: "pending" | "approved" | "rejected" | "suspended"
       app_role: "admin" | "user"
       contractor_status: "active" | "inactive"
       file_type: "image" | "audio" | "document"
@@ -517,6 +594,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_status: ["pending", "approved", "rejected", "suspended"],
       app_role: ["admin", "user"],
       contractor_status: ["active", "inactive"],
       file_type: ["image", "audio", "document"],

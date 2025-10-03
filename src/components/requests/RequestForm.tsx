@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useCreateRequest } from '@/hooks/useRequests';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserBalance } from '@/hooks/useUserBalance';
+import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
@@ -20,9 +22,25 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+const calculatePrice = (serviceType: string): number => {
+  switch (serviceType) {
+    case 'accompaniment':
+      return 0; // Preço variável, será definido pelo admin
+    case 'arrangement_no_mod':
+      return 250;
+    case 'arrangement_with_mod':
+      return 350;
+    case 'review':
+      return 0; // Gratuito
+    default:
+      return 0;
+  }
+};
+
 export function RequestForm() {
   const { user } = useAuth();
   const createRequest = useCreateRequest();
+  const { data: balance } = useUserBalance();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -38,6 +56,14 @@ export function RequestForm() {
   const onSubmit = async (data: FormData) => {
     if (!user) return;
 
+    const price = calculatePrice(data.service_type);
+
+    // Verificar saldo antes de criar solicitação
+    if (balance !== undefined && balance < price && price > 0) {
+      createRequest.reset();
+      return;
+    }
+
     await createRequest.mutateAsync({
       name: data.name,
       phone: data.phone,
@@ -45,6 +71,8 @@ export function RequestForm() {
       service_type: data.service_type,
       description: data.description || '',
       user_id: user.id,
+      status: 'pending',
+      price,
     });
 
     form.reset();
