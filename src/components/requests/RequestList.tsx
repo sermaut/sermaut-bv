@@ -5,6 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search } from 'lucide-react';
+import { RequestDetailsModal } from './RequestDetailsModal';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 const statusColors = {
   pending: 'bg-yellow-500',
@@ -24,12 +28,45 @@ const serviceLabels = {
   accompaniment: 'Acompanhamento',
   arrangement_no_mod: 'Arranjos sem Mod.',
   arrangement_with_mod: 'Arranjos com Mod.',
-  review: 'Revisão',
+  review: 'Análises Musicais',
 };
 
 export function RequestList() {
   const { data: requests, isLoading } = useRequests();
   const [search, setSearch] = useState('');
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  const handleDelete = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('service_requests')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Sucesso',
+        description: 'Solicitação eliminada com sucesso',
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['service_requests'] });
+    } catch (error) {
+      console.error('Erro ao eliminar:', error);
+      toast({
+        title: 'Erro',
+        description: 'Erro ao eliminar solicitação',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRequestClick = (request: any) => {
+    setSelectedRequest(request);
+    setModalOpen(true);
+  };
 
   const filteredRequests = requests?.filter((req) =>
     req.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -75,7 +112,11 @@ export function RequestList() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredRequests?.map((request) => (
-            <Card key={request.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card 
+              key={request.id} 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => handleRequestClick(request)}
+            >
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{request.name}</CardTitle>
@@ -99,6 +140,13 @@ export function RequestList() {
           ))}
         </div>
       )}
+
+      <RequestDetailsModal
+        request={selectedRequest}
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }

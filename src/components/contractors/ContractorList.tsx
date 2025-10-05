@@ -4,12 +4,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search, User } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Search } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ContractorDetailsModal } from './ContractorDetailsModal';
 
 export function ContractorList() {
   const { data: contractors, isLoading } = useContractors();
   const [search, setSearch] = useState('');
+  const [selectedContractor, setSelectedContractor] = useState<any>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const filteredContractors = contractors?.filter((contractor) =>
     contractor.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -64,7 +67,14 @@ export function ContractorList() {
               .slice(0, 2);
 
             return (
-              <Card key={contractor.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Card 
+                key={contractor.id} 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => {
+                  setSelectedContractor(contractor);
+                  setModalOpen(true);
+                }}
+              >
                 <CardHeader>
                   <div className="flex items-start gap-4">
                     <Avatar className="h-12 w-12">
@@ -95,6 +105,12 @@ export function ContractorList() {
           })}
         </div>
       )}
+
+      <ContractorDetailsModal
+        contractor={selectedContractor}
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+      />
     </div>
   );
 }

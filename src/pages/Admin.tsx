@@ -8,14 +8,14 @@ import { Users, UserCheck, Briefcase } from 'lucide-react';
 
 export default function Admin() {
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-3xl font-bold">Painel Administrativo</h1>
         <p className="text-muted-foreground">Gerencie usuários, aprovações e contratados</p>
       </div>
 
       <Tabs defaultValue="pending" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 max-w-3xl">
           <TabsTrigger value="pending" className="flex items-center gap-2">
             <UserCheck className="h-4 w-4" />
             Cadastros Pendentes

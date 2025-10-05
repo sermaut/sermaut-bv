@@ -2,6 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RequestForm } from '@/components/requests/RequestForm';
 import { RequestList } from '@/components/requests/RequestList';
+import { DepositTab } from '@/components/requests/DepositTab';
 
 export default function Requests() {
   return (
@@ -12,9 +13,10 @@ export default function Requests() {
       </div>
 
       <Tabs defaultValue="new" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-3 max-w-2xl">
           <TabsTrigger value="new">Solicitar Serviços</TabsTrigger>
           <TabsTrigger value="list">Solicitações Feitas</TabsTrigger>
+          <TabsTrigger value="deposit">Fazer Depósito</TabsTrigger>
         </TabsList>
 
         <TabsContent value="new">
@@ -31,6 +33,10 @@ export default function Requests() {
 
         <TabsContent value="list">
           <RequestList />
+        </TabsContent>
+
+        <TabsContent value="deposit">
+          <DepositTab />
         </TabsContent>
       </Tabs>
     </div>

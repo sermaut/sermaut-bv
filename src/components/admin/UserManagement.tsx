@@ -4,21 +4,21 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Ban, Plus, Search } from 'lucide-react';
-import { AddBalanceDialog } from './AddBalanceDialog';
+import { Search } from 'lucide-react';
 import { format } from 'date-fns';
+import { UserDetailsModal } from './UserDetailsModal';
 
 export function UserManagement() {
   const { data: users, isLoading } = useUsers();
-  const suspendUser = useSuspendUser();
   const [search, setSearch] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const filteredUsers = users?.filter(u => 
+  const filteredUsers = (users?.filter(u => 
     u.account_status !== 'pending' && 
     (u.full_name?.toLowerCase().includes(search.toLowerCase()) || 
      u.phone?.includes(search))
-  ) || [];
+  ) || []).sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''));
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: any; label: string; className: string }> = {
@@ -53,54 +53,34 @@ export function UserManagement() {
         <TableHeader>
           <TableRow>
             <TableHead>Nome</TableHead>
-            <TableHead>Telefone</TableHead>
-            <TableHead>Saldo</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Cadastro</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
+            <TableHead className="text-right">Saldo</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {filteredUsers.map((user) => (
-            <TableRow key={user.id}>
+            <TableRow 
+              key={user.id}
+              className="cursor-pointer hover:bg-muted/50"
+              onClick={() => {
+                setSelectedUser(user);
+                setModalOpen(true);
+              }}
+            >
               <TableCell className="font-medium">{user.full_name || 'Sem nome'}</TableCell>
-              <TableCell>{user.phone || 'N/A'}</TableCell>
-              <TableCell className="font-semibold">{user.balance?.toLocaleString('pt-AO')} Kz</TableCell>
-              <TableCell>{getStatusBadge(user.account_status)}</TableCell>
-              <TableCell>{format(new Date(user.created_at), 'dd/MM/yyyy')}</TableCell>
-              <TableCell className="text-right space-x-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setSelectedUserId(user.id)}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Adicionar Saldo
-                </Button>
-                {user.account_status !== 'suspended' && (
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => suspendUser.mutate(user.id)}
-                    disabled={suspendUser.isPending}
-                  >
-                    <Ban className="h-4 w-4 mr-1" />
-                    Suspender
-                  </Button>
-                )}
-              </TableCell>
+              <TableCell className="text-right font-semibold">{user.balance?.toLocaleString('pt-AO')} Kz</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      {selectedUserId && (
-        <AddBalanceDialog
-          userId={selectedUserId}
-          open={!!selectedUserId}
-          onClose={() => setSelectedUserId(null)}
-        />
-      )}
+      <UserDetailsModal
+        user={selectedUser}
+        open={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedUser(null);
+        }}
+      />
     </div>
   );
 }
