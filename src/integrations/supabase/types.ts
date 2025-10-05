@@ -113,6 +113,7 @@ export type Database = {
       contractors: {
         Row: {
           address: string | null
+          avatar_url: string | null
           balance: number
           created_at: string
           email: string
@@ -127,6 +128,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          avatar_url?: string | null
           balance?: number
           created_at?: string
           email: string
@@ -141,6 +143,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          avatar_url?: string | null
           balance?: number
           created_at?: string
           email?: string

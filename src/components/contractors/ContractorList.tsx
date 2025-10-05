@@ -5,8 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ContractorDetailsModal } from './ContractorDetailsModal';
+import { ContractorAvatar } from './ContractorAvatar';
 
 export function ContractorList() {
   const { data: contractors, isLoading } = useContractors();
@@ -59,13 +59,6 @@ export function ContractorList() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredContractors?.map((contractor) => {
-            const initials = contractor.name
-              .split(' ')
-              .map((n) => n[0])
-              .join('')
-              .toUpperCase()
-              .slice(0, 2);
-
             return (
               <Card 
                 key={contractor.id} 
@@ -77,11 +70,11 @@ export function ContractorList() {
               >
                 <CardHeader>
                   <div className="flex items-start gap-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
+                    <ContractorAvatar 
+                      avatarPath={contractor.avatar_url} 
+                      name={contractor.name} 
+                      className="h-12 w-12"
+                    />
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-lg truncate">{contractor.name}</CardTitle>
                       <CardDescription className="truncate">{contractor.email}</CardDescription>

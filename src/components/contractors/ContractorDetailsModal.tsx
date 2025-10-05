@@ -1,14 +1,15 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { DollarSign, Trash2, Edit, Plus, Minus } from 'lucide-react';
+import { DollarSign, Trash2, Edit, Plus, Minus, Upload, X } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { uploadContractorAvatar, deleteContractorAvatar } from '@/hooks/useContractors';
+import { ContractorAvatar } from './ContractorAvatar';
 
 interface ContractorDetailsModalProps {
   contractor: any;
@@ -20,7 +21,120 @@ export function ContractorDetailsModal({ contractor, open, onClose }: Contractor
   const [showBalanceDialog, setShowBalanceDialog] = useState(false);
   const [balanceAmount, setBalanceAmount] = useState(0);
   const [balanceAction, setBalanceAction] = useState<'add' | 'remove'>('add');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const queryClient = useQueryClient();
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Arquivo inválido',
+        description: 'Por favor selecione uma imagem',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'Arquivo muito grande',
+        description: 'Tamanho máximo: 5MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const handleAvatarUpload = async () => {
+    if (!avatarFile) return;
+
+    try {
+      setUploadingAvatar(true);
+
+      if (contractor.avatar_url) {
+        await deleteContractorAvatar(contractor.avatar_url);
+      }
+
+      const avatarPath = await uploadContractorAvatar(contractor.id, avatarFile);
+      
+      const { error } = await supabase
+        .from('contractors')
+        .update({ avatar_url: avatarPath })
+        .eq('id', contractor.id);
+
+      if (error) throw error;
+
+      setAvatarFile(null);
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview);
+        setAvatarPreview(null);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['contractors'] });
+
+      toast({
+        title: 'Foto atualizada!',
+        description: 'A foto de perfil foi atualizada com sucesso.',
+      });
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast({
+        title: 'Erro ao fazer upload',
+        description: 'Não foi possível atualizar a foto de perfil.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!contractor.avatar_url) return;
+
+    try {
+      setUploadingAvatar(true);
+
+      await deleteContractorAvatar(contractor.avatar_url);
+
+      const { error } = await supabase
+        .from('contractors')
+        .update({ avatar_url: null })
+        .eq('id', contractor.id);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['contractors'] });
+
+      toast({
+        title: 'Foto removida!',
+        description: 'A foto de perfil foi removida com sucesso.',
+      });
+    } catch (error) {
+      console.error('Error removing avatar:', error);
+      toast({
+        title: 'Erro ao remover foto',
+        description: 'Não foi possível remover a foto de perfil.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const cancelAvatarChange = () => {
+    setAvatarFile(null);
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+      setAvatarPreview(null);
+    }
+  };
 
   if (!contractor) return null;
 
@@ -96,18 +210,72 @@ export function ContractorDetailsModal({ contractor, open, onClose }: Contractor
         </DialogHeader>
 
         <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20">
-              <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                {contractor.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div>
+          <div className="flex flex-col items-center gap-4">
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Preview" className="h-32 w-32 rounded-full object-cover" />
+            ) : (
+              <ContractorAvatar 
+                avatarPath={contractor.avatar_url} 
+                name={contractor.name} 
+                className="h-32 w-32 text-3xl"
+              />
+            )}
+
+            <div className="text-center">
               <h3 className="text-2xl font-bold">{contractor.name}</h3>
               <Badge variant={contractor.status === 'active' ? 'default' : 'secondary'}>
                 {contractor.status === 'active' ? 'Ativo' : 'Inativo'}
               </Badge>
             </div>
+
+            {avatarPreview ? (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleAvatarUpload}
+                  disabled={uploadingAvatar}
+                >
+                  {uploadingAvatar ? 'Salvando...' : 'Salvar Foto'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={cancelAvatarChange}
+                  disabled={uploadingAvatar}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <label htmlFor="avatar-change">
+                  <Button size="sm" variant="outline" asChild disabled={uploadingAvatar}>
+                    <span className="cursor-pointer">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Alterar Foto
+                    </span>
+                  </Button>
+                  <input
+                    id="avatar-change"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                  />
+                </label>
+
+                {contractor.avatar_url && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleRemoveAvatar}
+                    disabled={uploadingAvatar}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
