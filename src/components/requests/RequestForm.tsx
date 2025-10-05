@@ -25,13 +25,13 @@ type FormData = z.infer<typeof formSchema>;
 const calculatePrice = (serviceType: string): number => {
   switch (serviceType) {
     case 'accompaniment':
-      return 0; // Preço variável, será definido pelo admin
+      return 350; // Acompanhamento: 350 Kz
     case 'arrangement_no_mod':
       return 250;
     case 'arrangement_with_mod':
-      return 350;
+      return 370; // Arranjos com Modificações: 370 Kz
     case 'review':
-      return 0; // Gratuito
+      return 50; // Análises Musicais: 50 Kz
     default:
       return 0;
   }
@@ -88,7 +88,7 @@ export function RequestForm() {
             <FormItem>
               <FormLabel>Nome Completo</FormLabel>
               <FormControl>
-                <Input placeholder="Seu nome" {...field} />
+                <Input placeholder="Seu nome" {...field} autoComplete="off" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -102,7 +102,7 @@ export function RequestForm() {
             <FormItem>
               <FormLabel>Telefone</FormLabel>
               <FormControl>
-                <Input placeholder="+244 900 000 000" {...field} />
+                <Input placeholder="+244 900 000 000" {...field} autoComplete="off" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -116,7 +116,7 @@ export function RequestForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="seu@email.com" {...field} />
+                <Input type="email" placeholder="seu@email.com" {...field} autoComplete="off" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -136,10 +136,10 @@ export function RequestForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="accompaniment">Acompanhamento (Preço variável)</SelectItem>
+                  <SelectItem value="accompaniment">Acompanhamento (350 Kz)</SelectItem>
                   <SelectItem value="arrangement_no_mod">Arranjos sem Modificações (250 Kz)</SelectItem>
-                  <SelectItem value="arrangement_with_mod">Arranjos com Modificações (350 Kz)</SelectItem>
-                  <SelectItem value="review">Revisão (Gratuita)</SelectItem>
+                  <SelectItem value="arrangement_with_mod">Arranjos com Modificações (370 Kz)</SelectItem>
+                  <SelectItem value="review">Análises Musicais (50 Kz)</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
