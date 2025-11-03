@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import PendingApproval from "./pages/PendingApproval";
 import Suspended from "./pages/Suspended";
+import AuditLogs from "./pages/AuditLogs";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const queryClient = new QueryClient();
@@ -89,6 +90,14 @@ const App = () => (
                   element={
                     <AdminRoute>
                       <Admin />
+                    </AdminRoute>
+                  } 
+                />
+                <Route 
+                  path="audit-logs" 
+                  element={
+                    <AdminRoute>
+                      <AuditLogs />
                     </AdminRoute>
                   } 
                 />

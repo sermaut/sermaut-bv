@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       contractor_tasks: {
         Row: {
           completed_at: string | null
@@ -317,6 +350,51 @@ export type Database = {
           },
         ]
       }
+      reviews: {
+        Row: {
+          comment: string | null
+          contractor_id: string | null
+          created_at: string
+          id: string
+          rating: number
+          request_id: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          request_id: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          contractor_id?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          request_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_contractor_id_fkey"
+            columns: ["contractor_id"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_requests: {
         Row: {
           created_at: string
@@ -390,31 +468,40 @@ export type Database = {
           admin_id: string | null
           amount: number
           created_at: string
+          deposit_receipt_path: string | null
           description: string | null
           id: string
           request_id: string | null
           type: string
           user_id: string
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           admin_id?: string | null
           amount: number
           created_at?: string
+          deposit_receipt_path?: string | null
           description?: string | null
           id?: string
           request_id?: string | null
           type: string
           user_id: string
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           admin_id?: string | null
           amount?: number
           created_at?: string
+          deposit_receipt_path?: string | null
           description?: string | null
           id?: string
           request_id?: string | null
           type?: string
           user_id?: string
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: [
           {
@@ -447,6 +534,16 @@ export type Database = {
     Functions: {
       add_user_balance: {
         Args: { p_amount: number; p_user_id: string }
+        Returns: undefined
+      }
+      create_audit_log: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_entity_id?: string
+          p_entity_type: string
+          p_user_id: string
+        }
         Returns: undefined
       }
       has_role: {

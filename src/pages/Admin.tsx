@@ -1,75 +1,45 @@
-import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PendingApprovals } from '@/components/admin/PendingApprovals';
-import { UserManagement } from '@/components/admin/UserManagement';
 import { ContractorManagement } from '@/components/admin/ContractorManagement';
-import { Users, UserCheck, Briefcase } from 'lucide-react';
+import { UserManagement } from '@/components/admin/UserManagement';
+import { DepositValidation } from '@/components/admin/DepositValidation';
+import { TaskManagement } from '@/components/tasks/TaskManagement';
 
 export default function Admin() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold">Painel Administrativo</h1>
-        <p className="text-muted-foreground">Gerencie usuários, aprovações e contratados</p>
+        <h1 className="text-3xl font-bold text-foreground">Administração</h1>
+        <p className="text-muted-foreground">Gerencie usuários, contratados e sistema</p>
       </div>
 
-      <Tabs defaultValue="pending" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 max-w-3xl">
-          <TabsTrigger value="pending" className="flex items-center gap-2">
-            <UserCheck className="h-4 w-4" />
-            Cadastros Pendentes
-          </TabsTrigger>
-          <TabsTrigger value="users" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Gerenciar Usuários
-          </TabsTrigger>
-          <TabsTrigger value="contractors" className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4" />
-            Gerenciar Contratados
-          </TabsTrigger>
+      <Tabs defaultValue="approvals" className="w-full">
+        <TabsList className="grid w-full grid-cols-5 max-w-4xl">
+          <TabsTrigger value="approvals">Aprovações</TabsTrigger>
+          <TabsTrigger value="users">Usuários</TabsTrigger>
+          <TabsTrigger value="contractors">Contratados</TabsTrigger>
+          <TabsTrigger value="deposits">Depósitos</TabsTrigger>
+          <TabsTrigger value="tasks">Tarefas</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="pending">
-          <Card>
-            <CardHeader>
-              <CardTitle>Cadastros Pendentes</CardTitle>
-              <CardDescription>
-                Aprove ou rejeite usuários que aguardam confirmação
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PendingApprovals />
-            </CardContent>
-          </Card>
+        <TabsContent value="approvals">
+          <PendingApprovals />
         </TabsContent>
 
         <TabsContent value="users">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gerenciar Usuários</CardTitle>
-              <CardDescription>
-                Visualize, edite, suspenda ou adicione saldo aos usuários
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <UserManagement />
-            </CardContent>
-          </Card>
+          <UserManagement />
         </TabsContent>
 
         <TabsContent value="contractors">
-          <Card>
-            <CardHeader>
-              <CardTitle>Gerenciar Contratados</CardTitle>
-              <CardDescription>
-                Adicione e gerencie contratados do sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ContractorManagement />
-            </CardContent>
-          </Card>
+          <ContractorManagement />
+        </TabsContent>
+
+        <TabsContent value="deposits">
+          <DepositValidation />
+        </TabsContent>
+
+        <TabsContent value="tasks">
+          <TaskManagement />
         </TabsContent>
       </Tabs>
     </div>

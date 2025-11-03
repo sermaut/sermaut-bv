@@ -9,6 +9,14 @@ import { RequestDetailsModal } from './RequestDetailsModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 const statusColors = {
   pending: 'bg-yellow-500',
@@ -36,6 +44,8 @@ export function RequestList() {
   const [search, setSearch] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 12;
   const queryClient = useQueryClient();
 
   const handleDelete = async (id: string) => {
@@ -73,6 +83,9 @@ export function RequestList() {
     req.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  const totalPages = Math.ceil((filteredRequests?.length || 0) / pageSize);
+  const paginatedRequests = filteredRequests?.slice((page - 1) * pageSize, page * pageSize);
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -103,15 +116,16 @@ export function RequestList() {
         />
       </div>
 
-      {filteredRequests && filteredRequests.length === 0 ? (
+      {paginatedRequests && paginatedRequests.length === 0 ? (
         <Card>
           <CardContent className="pt-6 text-center text-muted-foreground">
             Nenhuma solicitação encontrada.
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredRequests?.map((request) => (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedRequests?.map((request) => (
             <Card 
               key={request.id} 
               className="hover:shadow-lg transition-shadow cursor-pointer"
@@ -137,8 +151,42 @@ export function RequestList() {
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <Pagination className="mt-6">
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+                {[...Array(Math.min(5, totalPages))].map((_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <PaginationItem key={pageNum}>
+                      <PaginationLink
+                        onClick={() => setPage(pageNum)}
+                        isActive={page === pageNum}
+                        className="cursor-pointer"
+                      >
+                        {pageNum}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
+        </>
       )}
 
       <RequestDetailsModal

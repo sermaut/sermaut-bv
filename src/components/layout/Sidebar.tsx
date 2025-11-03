@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, Users, BarChart3, Mail, Shield } from 'lucide-react';
+import { Home, FileText, Users, BarChart3, Mail, Shield, History, ListChecks } from 'lucide-react';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { cn } from '@/lib/utils';
@@ -14,7 +14,10 @@ export function Sidebar() {
     { title: 'Contratados', url: '/contractors', icon: Users },
     { title: 'Relatórios', url: '/reports', icon: BarChart3 },
     { title: 'Contato', url: '/contact', icon: Mail },
-    ...(isAdmin ? [{ title: 'Administração', url: '/admin', icon: Shield }] : []),
+    ...(isAdmin ? [
+      { title: 'Administração', url: '/admin', icon: Shield },
+      { title: 'Auditoria', url: '/audit-logs', icon: History },
+    ] : []),
   ];
 
   return (
