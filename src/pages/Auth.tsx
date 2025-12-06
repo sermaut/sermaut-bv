@@ -103,7 +103,7 @@ export default function Auth() {
                       <FormItem>
                         <FormLabel>Senha</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="••••••" {...field} autoComplete="off" />
+                          <Input type="password" placeholder="" {...field} autoComplete="off" className="placeholder:text-transparent" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -165,7 +165,7 @@ export default function Auth() {
                       <FormItem>
                         <FormLabel>Senha</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="••••••" {...field} autoComplete="off" />
+                          <Input type="password" placeholder="" {...field} autoComplete="off" className="placeholder:text-transparent" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

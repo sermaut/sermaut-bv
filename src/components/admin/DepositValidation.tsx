@@ -89,9 +89,12 @@ export function DepositValidation() {
     },
   });
 
-  const handleViewReceipt = (receiptPath: string) => {
-    setSelectedReceipt(receiptPath);
-    setModalOpen(true);
+  const handleViewReceipt = async (receiptPath: string) => {
+    const { data } = await supabase.storage.from('service-attachments').createSignedUrl(receiptPath, 3600);
+    if (data?.signedUrl) {
+      setSelectedReceipt(data.signedUrl);
+      setModalOpen(true);
+    }
   };
 
   if (isLoading) {

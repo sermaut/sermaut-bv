@@ -1,4 +1,4 @@
-import { Bell } from 'lucide-react';
+import { Bell, Trash2, CheckCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -8,6 +8,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useNotifications, useMarkNotificationAsRead, useUnreadCount } from '@/hooks/useNotifications';
+import { useDeleteNotification, useDeleteAllNotifications } from '@/hooks/useDeleteNotification';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -15,12 +16,30 @@ export function NotificationCenter() {
   const { data: notifications } = useNotifications();
   const { data: unreadCount } = useUnreadCount();
   const markAsRead = useMarkNotificationAsRead();
+  const deleteNotification = useDeleteNotification();
+  const deleteAllNotifications = useDeleteAllNotifications();
 
   const handleNotificationClick = (id: string, read: boolean) => {
     if (!read) {
       markAsRead.mutate(id);
     }
   };
+
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    deleteNotification.mutate(id);
+  };
+
+  const handleDeleteAll = () => {
+    if (notifications && notifications.length > 0) {
+      deleteAllNotifications.mutate();
+    }
+  };
+
+  // Sort notifications by created_at (newest first)
+  const sortedNotifications = notifications?.slice().sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 
   return (
     <Popover>
@@ -35,25 +54,47 @@ export function NotificationCenter() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
-        <div className="p-4 border-b">
+        <div className="p-4 border-b flex items-center justify-between">
           <h3 className="font-semibold">Notificações</h3>
+          {notifications && notifications.length > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={handleDeleteAll}
+              disabled={deleteAllNotifications.isPending}
+              className="text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Limpar
+            </Button>
+          )}
         </div>
         <ScrollArea className="h-[400px]">
-          {notifications && notifications.length > 0 ? (
+          {sortedNotifications && sortedNotifications.length > 0 ? (
             <div className="divide-y">
-              {notifications.map((notif) => (
+              {sortedNotifications.map((notif) => (
                 <div
                   key={notif.id}
-                  className={`p-4 cursor-pointer hover:bg-muted/50 transition-colors ${
-                    !notif.read ? 'bg-muted/20' : ''
+                  className={`p-4 cursor-pointer hover:bg-muted/50 transition-colors relative group ${
+                    !notif.read ? 'bg-primary/5 border-l-2 border-l-primary' : ''
                   }`}
                   onClick={() => handleNotificationClick(notif.id, notif.read)}
                 >
                   <div className="flex justify-between items-start gap-2 mb-1">
-                    <h4 className="font-medium text-sm">{notif.title}</h4>
-                    {!notif.read && (
-                      <Badge variant="default" className="h-5 text-xs">Novo</Badge>
-                    )}
+                    <h4 className="font-medium text-sm flex-1">{notif.title}</h4>
+                    <div className="flex items-center gap-1">
+                      {!notif.read && (
+                        <Badge variant="default" className="h-5 text-xs">Novo</Badge>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => handleDelete(e, notif.id)}
+                      >
+                        <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                      </Button>
+                    </div>
                   </div>
                   {notif.description && (
                     <p className="text-sm text-muted-foreground mb-2">{notif.description}</p>
