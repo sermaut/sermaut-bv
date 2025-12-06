@@ -4,6 +4,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
@@ -68,10 +69,23 @@ export function Header() {
                 <User className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem disabled className="text-muted-foreground">
                 {user?.email}
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem disabled className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Wallet className="h-4 w-4" />
+                  Saldo
+                </span>
+                {balanceLoading ? (
+                  <Skeleton className="h-4 w-16" />
+                ) : (
+                  <span className="font-semibold text-primary">{balance?.toLocaleString('pt-AO')} Kz</span>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut} className="text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
                 Sair

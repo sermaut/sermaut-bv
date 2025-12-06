@@ -1,20 +1,33 @@
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, Users, BarChart3, Mail, Shield, History, ListChecks } from 'lucide-react';
+import { Home, FileText, Users, BarChart3, Mail, Shield, History, ExternalLink } from 'lucide-react';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useIsContractor } from '@/hooks/useIsContractor';
 import { cn } from '@/lib/utils';
 
 export function Sidebar() {
   const { isOpen, close } = useSidebar();
   const { isAdmin } = useUserRole();
+  const { isContractor } = useIsContractor();
 
   const menuItems = [
+    // SIGEG-BV link first
+    { 
+      title: 'Ir para SIGEG-BV', 
+      url: 'https://sigeg-bv.lovable.app', 
+      icon: ExternalLink, 
+      external: true 
+    },
     { title: 'Página Inicial', url: '/', icon: Home },
     { title: 'Solicitações', url: '/requests', icon: FileText },
-    { title: 'Contratados', url: '/contractors', icon: Users },
-    { title: 'Relatórios', url: '/reports', icon: BarChart3 },
+    // Hide these from contractors
+    ...(!isContractor ? [
+      { title: 'Contratados', url: '/contractors', icon: Users },
+      { title: 'Relatórios', url: '/reports', icon: BarChart3 },
+    ] : []),
     { title: 'Contato', url: '/contact', icon: Mail },
-    ...(isAdmin ? [
+    // Admin only
+    ...(isAdmin && !isContractor ? [
       { title: 'Administração', url: '/admin', icon: Shield },
       { title: 'Auditoria', url: '/audit-logs', icon: History },
     ] : []),
@@ -37,22 +50,38 @@ export function Sidebar() {
         <ul className="space-y-1">
           {menuItems.map((item) => (
             <li key={item.url}>
-              <NavLink
-                to={item.url}
-                end={item.url === '/'}
-                onClick={close}
-                className={({ isActive }) =>
-                  cn(
+              {item.external ? (
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={close}
+                  className={cn(
                     'flex items-center gap-3 px-3 py-2 rounded-md transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                  )
-                }
-              >
-                <item.icon className="h-5 w-5 flex-shrink-0" />
-                <span>{item.title}</span>
-              </NavLink>
+                    'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                  )}
+                >
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  <span>{item.title}</span>
+                </a>
+              ) : (
+                <NavLink
+                  to={item.url}
+                  end={item.url === '/'}
+                  onClick={close}
+                  className={({ isActive }) =>
+                    cn(
+                      'flex items-center gap-3 px-3 py-2 rounded-md transition-colors',
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    )
+                  }
+                >
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  <span>{item.title}</span>
+                </NavLink>
+              )}
             </li>
           ))}
         </ul>

@@ -59,30 +59,31 @@ export function DepositTab() {
 
     try {
       // Upload do comprovante
-      const fileName = `${user.id}/${Date.now()}_${receiptFile.name}`;
+      const fileName = `deposits/${user.id}/${Date.now()}_${receiptFile.name}`;
       const { error: uploadError } = await supabase.storage
         .from('service-attachments')
         .upload(fileName, receiptFile);
 
       if (uploadError) throw uploadError;
 
-      // Criar registro de depósito pendente
+      // Criar registro de depósito pendente COM o caminho do comprovante
       const { error: insertError } = await supabase
         .from('user_transactions')
         .insert({
           user_id: user.id,
-          type: 'deposit_pending',
+          type: 'deposit',
           amount: data.amount,
           description: `Depósito via ${paymentMethods[data.payment_method].name} - Aguardando aprovação`,
+          deposit_receipt_path: fileName,
         });
 
       if (insertError) throw insertError;
 
-      // Criar notificação para o admin
+      // Criar notificação para o usuário
       await supabase.from('notifications').insert({
         user_id: user.id,
         title: 'Depósito em Análise',
-        description: `Seu depósito de ${data.amount} Kz está sendo analisado.`,
+        description: `Seu depósito de ${data.amount.toLocaleString()} Kz está sendo analisado.`,
         type: 'deposit',
       });
 
