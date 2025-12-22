@@ -49,6 +49,7 @@ export type Database = {
       }
       contractor_tasks: {
         Row: {
+          accepted_at: string | null
           completed_at: string | null
           contractor_id: string
           created_at: string
@@ -60,6 +61,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          accepted_at?: string | null
           completed_at?: string | null
           contractor_id: string
           created_at?: string
@@ -71,6 +73,7 @@ export type Database = {
           title: string
         }
         Update: {
+          accepted_at?: string | null
           completed_at?: string | null
           contractor_id?: string
           created_at?: string
@@ -311,6 +314,9 @@ export type Database = {
       }
       request_attachments: {
         Row: {
+          approved: boolean | null
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
           file_name: string
           file_path: string
@@ -319,8 +325,12 @@ export type Database = {
           id: string
           mime_type: string
           request_id: string
+          uploaded_by: string | null
         }
         Insert: {
+          approved?: boolean | null
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           file_name: string
           file_path: string
@@ -329,8 +339,12 @@ export type Database = {
           id?: string
           mime_type: string
           request_id: string
+          uploaded_by?: string | null
         }
         Update: {
+          approved?: boolean | null
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
           file_name?: string
           file_path?: string
@@ -339,6 +353,7 @@ export type Database = {
           id?: string
           mime_type?: string
           request_id?: string
+          uploaded_by?: string | null
         }
         Relationships: [
           {

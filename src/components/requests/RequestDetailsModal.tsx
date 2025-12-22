@@ -53,7 +53,13 @@ export function RequestDetailsModal({ request, open, onClose, onEdit, onDelete }
     if (!request?.id) return;
     setLoadingAttachments(true);
     try {
-      const { data, error } = await supabase.from('request_attachments').select('*').eq('request_id', request.id).order('created_at', { ascending: false });
+      // Only load approved attachments for users (contractors' uploads need approval first)
+      const { data, error } = await supabase
+        .from('request_attachments')
+        .select('*')
+        .eq('request_id', request.id)
+        .or('approved.eq.true,uploaded_by.is.null') // Show approved OR directly uploaded (no uploaded_by = admin upload)
+        .order('created_at', { ascending: false });
       if (error) throw error;
       setAttachments(data || []);
     } catch (error) {

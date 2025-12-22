@@ -50,6 +50,8 @@ export function DepositValidation() {
         if (error) throw error;
       } else {
         // Se rejeitado, remove o comprovante
+        const transaction = deposits?.find(d => d.id === transactionId);
+        
         const { error } = await supabase
           .from('user_transactions')
           .update({
@@ -62,11 +64,18 @@ export function DepositValidation() {
         if (error) throw error;
 
         // Remove o valor que foi adicionado
-        const transaction = deposits?.find(d => d.id === transactionId);
         if (transaction) {
           await supabase.rpc('add_user_balance', {
             p_user_id: transaction.user_id,
             p_amount: -transaction.amount,
+          });
+
+          // Envia notificação de rejeição ao usuário
+          await supabase.from('notifications').insert({
+            user_id: transaction.user_id,
+            title: 'Depósito Rejeitado',
+            description: `Seu comprovante de depósito de ${transaction.amount.toLocaleString()} Kz foi rejeitado. Verifique se o comprovante está legível e tente novamente.`,
+            type: 'deposit_rejected',
           });
         }
       }
