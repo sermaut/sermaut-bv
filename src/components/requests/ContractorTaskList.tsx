@@ -55,25 +55,47 @@ export function ContractorTaskList({ contractorId }: ContractorTaskListProps) {
   });
 
   const acceptTaskMutation = useMutation({
-    mutationFn: async ({ taskId, files }: { taskId: string; files: File[] }) => {
+    mutationFn: async ({ taskId, files, requestId }: { taskId: string; files: File[]; requestId: string | null }) => {
       if (files.length === 0) {
         throw new Error('Anexe pelo menos um arquivo de comprovante.');
       }
 
-      // Upload files
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Não autenticado');
+
+      // Upload files and register in request_attachments
       for (const file of files) {
+        const fileType = file.type.startsWith('image/') ? 'image' : file.type.startsWith('audio/') ? 'audio' : 'document';
         const fileName = `task-proofs/${taskId}/${Date.now()}_${file.name}`;
+        
         const { error: uploadError } = await supabase.storage
           .from('service-attachments')
           .upload(fileName, file);
 
         if (uploadError) throw uploadError;
+
+        // Register attachment for approval (only if linked to a request)
+        if (requestId) {
+          await supabase.from('request_attachments').insert({
+            request_id: requestId,
+            file_type: fileType as any,
+            file_path: fileName,
+            file_name: file.name,
+            file_size: file.size,
+            mime_type: file.type,
+            approved: false,
+            uploaded_by: user.id,
+          });
+        }
       }
 
-      // Update task status
+      // Update task status with accepted_at timestamp
       const { error } = await supabase
         .from('contractor_tasks')
-        .update({ status: 'in_progress' })
+        .update({ 
+          status: 'in_progress',
+          accepted_at: new Date().toISOString(),
+        })
         .eq('id', taskId);
 
       if (error) throw error;
@@ -135,7 +157,11 @@ export function ContractorTaskList({ contractorId }: ContractorTaskListProps) {
 
   const handleSubmitAccept = () => {
     if (selectedTask && files.length > 0) {
-      acceptTaskMutation.mutate({ taskId: selectedTask.id, files });
+      acceptTaskMutation.mutate({ 
+        taskId: selectedTask.id, 
+        files, 
+        requestId: selectedTask.request_id 
+      });
     }
   };
 

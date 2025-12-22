@@ -3,6 +3,7 @@ import { PendingApprovals } from '@/components/admin/PendingApprovals';
 import { ContractorManagement } from '@/components/admin/ContractorManagement';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { DepositValidation } from '@/components/admin/DepositValidation';
+import { ContractorProofValidation } from '@/components/admin/ContractorProofValidation';
 import { TaskManagement } from '@/components/tasks/TaskManagement';
 
 export default function Admin() {
@@ -14,11 +15,12 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="approvals" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 max-w-4xl">
+        <TabsList className="grid w-full grid-cols-6 max-w-5xl">
           <TabsTrigger value="approvals">Aprovações</TabsTrigger>
           <TabsTrigger value="users">Usuários</TabsTrigger>
           <TabsTrigger value="contractors">Contratados</TabsTrigger>
           <TabsTrigger value="deposits">Depósitos</TabsTrigger>
+          <TabsTrigger value="proofs">Comprovantes</TabsTrigger>
           <TabsTrigger value="tasks">Tarefas</TabsTrigger>
         </TabsList>
 
@@ -36,6 +38,10 @@ export default function Admin() {
 
         <TabsContent value="deposits">
           <DepositValidation />
+        </TabsContent>
+
+        <TabsContent value="proofs">
+          <ContractorProofValidation />
         </TabsContent>
 
         <TabsContent value="tasks">
